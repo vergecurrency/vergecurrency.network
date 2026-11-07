@@ -5,7 +5,7 @@ It displays algorithm hashrate and difficulty with a responsive retrowave
 interface, connected neon charts, date controls, CSV export, and a public API.
 The website has no accounts or admin login.
 
-built by github.com/justinvforvendetta
+built by https://github.com/justinvforvendetta
 
 ## Requirements
 

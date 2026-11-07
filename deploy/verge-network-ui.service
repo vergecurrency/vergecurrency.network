@@ -1,0 +1,24 @@
+[Unit]
+Description=Verge public mining dashboard
+Wants=network-online.target
+After=network-online.target influxdb.service
+
+[Service]
+Type=simple
+User=username
+Group=username
+WorkingDirectory=/opt/vergecurrency.network
+Environment=NODE_ENV=production
+EnvironmentFile=-/opt/vergecurrency.network/.env
+ExecStart=/usr/bin/node /opt/vergecurrency.network/src/web/server.js
+Restart=on-failure
+RestartSec=10
+TimeoutStopSec=25
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=read-only
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,56 @@
+# Private runtime configuration and credentials
+.env
+.env.*
+!.env.example
+credentials.json
+credentials.json.*
+credentials.*.json
+!credentials.example.json
+.cookie
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+
+# Installed dependencies, caches, and generated output
+node_modules/
+build/
+dist/
+coverage/
+.nyc_output/
+.npm/
+.npm-cache/
+.cache/
+*.tsbuildinfo
+*.log
+logs/
+pids/
+*.pid
+
+# Database files and backup archives
+influxdb/
+*.db
+*.sqlite*
+*.tar
+*.tar.gz
+*.tgz
+*.zip
+*.bak
+*.backup
+
+# Local editor and assistant tooling
+.vscode/
+.idea/
+.codex/
+.agents/
+.claude/
+.ai/
+AGENTS.md
+CLAUDE.md
+GEMINI.md
+copilot-instructions.md
+*.code-workspace
+.DS_Store
+Thumbs.db

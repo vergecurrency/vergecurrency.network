@@ -1,0 +1,6 @@
+# Merge this setting into the existing [http] section of
+# /etc/influxdb/influxdb.conf. This is a fragment, not a complete replacement.
+# Applies to InfluxDB 1.x with the UI and collector on this same host.
+# The new public mining UI already uses http://127.0.0.1:8086.
+[http]
+  bind-address = "127.0.0.1:8086"

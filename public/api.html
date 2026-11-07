@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0c071a">
+  <meta name="description" content="Use the public Verge mining API to read algorithm hashrate and difficulty, with date ranges, time grouping, and JSON examples.">
+  <title>API reference · Verge Mining Observatory</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/retrowave.css">
+  <link rel="stylesheet" href="/api.css">
+  <script type="module" src="/api.js"></script>
+</head>
+<body id="top">
+  <div class="retro-atmosphere" aria-hidden="true"><div class="retro-nebula"></div><div class="retro-sun"></div><div class="retro-grid"></div><div class="retro-vignette"></div></div>
+  <a href="#main" class="skip-link">Skip to API documentation</a>
+  <header class="site-header"><div class="header-inner">
+    <a class="brand" href="/" aria-label="Verge mining home"><svg viewBox="0 0 36 36" aria-hidden="true"><path d="M3 7h8l7 21L10 7m8 21L27 7h6L20 30h-5L3 7" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/></svg><span>VERGE<span class="brand-caption">MINING OBSERVATORY</span></span></a>
+    <nav aria-label="Main navigation"><a href="/#overview">Overview</a><a href="/#charts">Charts</a><a href="/#snapshot">Algorithms</a><a href="/api" class="nav-active" aria-current="page">API</a></nav>
+    <a class="quiet-button api-back" href="/">Back to dashboard <span aria-hidden="true">↗</span></a>
+  </div></header>
+  <main id="main" class="page api-page">
+    <section class="intro api-intro"><div><p class="eyebrow"><span class="tiny-line"></span> PUBLIC API / DEVELOPER REFERENCE</p><h1>Read the signal<span class="heading-dot">.</span></h1><p class="intro-copy">Five algorithms. Two metrics. Explore Verge hashrate and difficulty through a simple JSON API.</p></div><div class="api-badges"><span>READ ONLY</span><span>NO API KEY</span><span>JSON</span></div></section>
+    <div class="api-layout">
+      <nav class="api-index" aria-label="On this page"><span class="section-index">ON THIS FREQUENCY</span><a href="#quickstart">01 / Quickstart</a><a href="#endpoints">02 / Endpoints</a><a href="#parameters">03 / Date ranges</a><a href="#fields">04 / Algorithm fields</a><a href="#responses">05 / Responses</a><a href="#try-it">06 / Try a request</a><a href="#limits">07 / Usage &amp; errors</a></nav>
+      <div class="api-content">
+        <section id="quickstart" class="api-section"><span class="section-index">01 / GET CONNECTED</span><h2>Start with one request</h2><p>Read the last 24 hours of data for every algorithm. No account, API key, or authentication header is required.</p>
+          <div class="api-code-heading"><span>cURL</span><a href="/api/dashboard" target="_blank" rel="noopener">Open JSON <span aria-hidden="true">↗</span></a></div>
+          <pre><code id="api-quick-curl">curl -fsS 'https://vergecurrency.network/api/dashboard'</code></pre>
+          <details class="api-example"><summary>JavaScript example · Node.js or a page on this origin</summary><pre><code>const end = new Date();
+const start = new Date(end.getTime() - 60 * 60 * 1000);
+const url = new URL('https://vergecurrency.network/api/dashboard');
+url.search = new URLSearchParams({
+  from: start.toISOString(),
+  to: end.toISOString(),
+  bucket: 'auto'
+});
+
+const response = await fetch(url);
+const data = await response.json();
+if (!response.ok) throw new Error(data.error);
+
+console.log(data.datasets.hashpower.latest?.scrypt);
+console.log(data.datasets.difficulty.points);</code></pre></details>
+          <p class="api-note">The API is public, but cross-origin browser requests are not enabled. Use a server-side client to fetch it from another website, or call it from a page on this origin.</p>
+        </section>
+        <section id="endpoints" class="api-section"><span class="section-index">02 / TWO ENDPOINTS</span><h2>Choose your signal</h2>
+          <article class="api-endpoint"><div class="api-route"><span class="api-method">GET</span><code>/api/dashboard</code><a href="/api/dashboard" target="_blank" rel="noopener" aria-label="Open the dashboard JSON response">↗</a></div><p>Returns both <code>hashpower</code> and <code>difficulty</code>, including chart points and the latest recorded sample within your chosen dates. Every response contains all five algorithms; select the fields you need in your client.</p></article>
+          <article class="api-endpoint"><div class="api-route"><span class="api-method">GET</span><code>/api/health</code><a href="/api/health" target="_blank" rel="noopener" aria-label="Open the health JSON response">↗</a></div><pre><code>{"status":"ok","mode":"live"}</code></pre><p>This confirms the web process is responding. It does not check whether new mining samples are being collected. Check sample timestamps in the dashboard response for freshness.</p></article>
+          <p class="api-note">Both endpoints also accept <code>HEAD</code>. Requests are read-only; other HTTP methods are rejected.</p>
+        </section>
+        <section id="parameters" class="api-section"><span class="section-index">03 / SET THE WINDOW</span><h2>Date ranges &amp; grouping</h2><p>Add these query parameters to <code>/api/dashboard</code>. Omit the dates for the last 24 hours, or supply both dates together.</p>
+          <div class="api-table-scroll"><table class="api-table"><thead><tr><th scope="col">Parameter</th><th scope="col">Format</th><th scope="col">Behavior</th></tr></thead><tbody>
+            <tr><th scope="row"><code>from</code></th><td>ISO UTC string</td><td>Start date, inclusive. Example: <code>2026-11-05T12:00:00Z</code>.</td></tr>
+            <tr><th scope="row"><code>to</code></th><td>ISO UTC string</td><td>End date, inclusive. Must follow <code>from</code>. Choose dates ending at or before now.</td></tr>
+            <tr><th scope="row"><code>bucket</code></th><td><code>auto</code>, <code>hour</code>, <code>day</code>, <code>month</code></td><td>Optional, defaults to <code>auto</code>. Controls the averaging interval.</td></tr>
+          </tbody></table></div>
+          <div class="api-table-scroll"><table class="api-table"><thead><tr><th scope="col">Grouping</th><th scope="col">Values returned</th><th scope="col">Maximum date span</th></tr></thead><tbody>
+            <tr><th scope="row"><code>auto</code></th><td>About 360 averaged points, with a minimum interval of one minute.</td><td>20 years</td></tr>
+            <tr><th scope="row"><code>hour</code></th><td>Hourly averages.</td><td>31 days</td></tr>
+            <tr><th scope="row"><code>day</code></th><td>Daily averages.</td><td>744 days</td></tr>
+            <tr><th scope="row"><code>month</code></th><td>Actual calendar-month averages, weighted by sample count.</td><td>20 years</td></tr>
+          </tbody></table></div>
+          <p class="api-note">Dates must include the time and end in <code>Z</code>; optional fractional seconds are supported. Hour, day, and month boundaries use UTC. Only <code>from</code>, <code>to</code>, and <code>bucket</code> are accepted, once each. There is no <code>algorithm</code>, <code>period</code>, or arbitrary query parameter.</p>
+        </section>
+        <section id="fields" class="api-section"><span class="section-index">04 / THE FIVE ALGORITHMS</span><h2>Know your fields</h2><p>Hashrate uses raw hashes per second (<code>H/s</code>). Difficulty is dimensionless. Grouped values are averages and may be fractional.</p>
+          <div class="api-table-scroll"><table class="api-table"><thead><tr><th scope="col">Algorithm</th><th scope="col">Inside <code>datasets.hashpower</code></th><th scope="col">Inside <code>datasets.difficulty</code></th></tr></thead><tbody>
+            <tr><th scope="row"><span class="api-algo scrypt">Scrypt</span></th><td><code>scrypt</code></td><td><code>scrypt</code></td></tr>
+            <tr><th scope="row"><span class="api-algo groestl">Groestl</span></th><td><code>groestl</code></td><td><code>groestl</code></td></tr>
+            <tr><th scope="row"><span class="api-algo lyra2re">Lyra2RE</span></th><td><code>lyra2re</code></td><td><code>lyra2re</code></td></tr>
+            <tr><th scope="row"><span class="api-algo x17">X17</span></th><td><code>x17</code></td><td><code>x17</code></td></tr>
+            <tr><th scope="row"><span class="api-algo blake2s">Blake2s</span></th><td><code>blake2s</code></td><td><code>blake</code></td></tr>
+          </tbody></table></div>
+          <p class="api-note">The Blake field names differ between the two metrics. A value of <code>null</code> means no recorded value; it is not a zero. Each point's <code>time</code> is a Unix timestamp in milliseconds: use <code>new Date(point.time)</code> in JavaScript.</p>
+        </section>
+        <section id="responses" class="api-section"><span class="section-index">05 / READ THE RESPONSE</span><h2>Data &amp; freshness</h2>
+          <div class="api-table-scroll"><table class="api-table"><thead><tr><th scope="col">Property</th><th scope="col">Meaning</th></tr></thead><tbody>
+            <tr><th scope="row"><code>mode</code></th><td><code>live</code> means real recorded data, not a guarantee it is current. <code>demo</code> identifies generated preview data.</td></tr>
+            <tr><th scope="row"><code>generatedAt</code></th><td>ISO UTC time this response was generated. A cached response retains its original time.</td></tr>
+            <tr><th scope="row"><code>range</code></th><td>Effective <code>from</code>, <code>to</code>, <code>intervalMs</code> in milliseconds, and the selected <code>grouping</code>. Monthly grouping combines daily samples into calendar months.</td></tr>
+            <tr><th scope="row"><code>availableRange</code></th><td>Known recorded history as <code>{from, to}</code> in milliseconds, or <code>null</code> if none is known or metadata is unavailable.</td></tr>
+            <tr><th scope="row"><code>datasets</code></th><td>Contains <code>hashpower</code> and <code>difficulty</code>. Each has <code>points</code> (averaged rows), <code>latest</code> (the latest raw sample in your dates, or <code>null</code>), and <code>available</code> (whether its queries succeeded).</td></tr>
+            <tr><th scope="row"><code>partial</code></th><td><code>true</code> when one metric could not be loaded. An empty period alone does not make a result partial.</td></tr>
+            <tr><th scope="row"><code>latestObservedAt</code></th><td>Newest raw sample timestamp in the selected range, in milliseconds, or <code>null</code>. Use this to evaluate freshness for a current period.</td></tr>
+          </tbody></table></div>
+          <div class="api-callout">Empty date ranges stay empty. Missing fields remain <code>null</code>; clients should not replace them with zero. Historical backfilled snapshots may be less frequent than live samples.</div>
+          <details class="api-example"><summary>Example data excerpt · illustrative values, metadata omitted</summary><pre><code>{
+  "datasets": {
+    "hashpower": {
+      "points": [
+        {"time":1735689600000,"scrypt":8400000000000,"groestl":31000000000,"lyra2re":62000000000,"x17":1800000000000,"blake2s":210000000000000}
+      ],
+      "latest": {"time":1735689600000,"scrypt":8400000000000,"groestl":31000000000,"lyra2re":62000000000,"x17":1800000000000,"blake2s":210000000000000},
+      "available": true
+    },
+    "difficulty": {
+      "points": [
+        {"time":1735689600000,"scrypt":284000,"groestl":1200,"lyra2re":2100,"x17":58000,"blake":7100000}
+      ],
+      "latest": {"time":1735689600000,"scrypt":284000,"groestl":1200,"lyra2re":2100,"x17":58000,"blake":7100000},
+      "available": true
+    }
+  }
+}</code></pre></details>
+        </section>
+        <section id="try-it" class="api-section"><span class="section-index">06 / TUNE A REQUEST</span><h2>Try the API</h2><p>Build a request for this site's public chart endpoint. Dates below are entered in UTC. No request is sent until you press Run request.</p>
+          <form id="api-form" class="api-form"><fieldset id="api-fields" disabled><legend class="sr-only">Chart request settings</legend>
+            <label>Time period<select id="api-period"><option value="1h">Last hour</option><option value="1d" selected>Last 24 hours</option><option value="7d">Last 7 days</option><option value="30d">Last 30 days</option><option value="custom">Custom dates</option></select></label>
+            <label>Group by<select id="api-bucket"><option value="auto">Auto</option><option value="hour">Hour</option><option value="day">Day</option><option value="month">Calendar month</option></select></label>
+            <label>From (UTC)<input id="api-from" type="datetime-local" step="60" required></label>
+            <label>To (UTC)<input id="api-to" type="datetime-local" step="60" required></label>
+            <div class="api-actions"><button id="api-run" class="primary-button" type="submit">Run request <span aria-hidden="true">↗</span></button><button id="api-copy" class="quiet-button" type="button">Copy cURL</button><a id="api-open" href="/api/dashboard" target="_blank" rel="noopener">Open JSON ↗</a></div>
+          </fieldset></form>
+          <p id="api-error" class="api-error" role="alert" hidden></p>
+          <div class="api-code-heading"><span>YOUR REQUEST</span><span id="api-copy-status" role="status"></span></div><pre><code id="api-curl">Choose a time window to build your request.</code></pre>
+          <p id="api-status" class="api-note" role="status">Ready when you are.</p>
+          <pre id="api-result" class="api-result" tabindex="0" aria-label="API JSON response" hidden></pre>
+          <noscript><p class="api-note">Enable JavaScript to use this request builder. The endpoint links and examples above work without it.</p></noscript>
+        </section>
+        <section id="limits" class="api-section"><span class="section-index">07 / KEEP THE SIGNAL CLEAR</span><h2>Usage &amp; errors</h2><p>Poll at most once per minute. Chart requests are limited to 12 per 10 seconds per client IP address; clients sharing an address share that allowance. Identical date ranges may be cached for 30 seconds, and history metadata for up to one minute.</p>
+          <div class="api-table-scroll"><table class="api-table"><thead><tr><th scope="col">Status</th><th scope="col">Meaning</th></tr></thead><tbody>
+            <tr><th scope="row"><code>200</code></th><td>Successful response, including valid periods with no recorded samples. Check <code>partial</code> and each metric's <code>available</code> flag.</td></tr>
+            <tr><th scope="row"><code>400</code></th><td>Invalid dates, grouping, unknown parameters, or repeated parameters.</td></tr>
+            <tr><th scope="row"><code>404</code></th><td>Unknown route.</td></tr>
+            <tr><th scope="row"><code>405</code></th><td>Unsupported HTTP method. Use <code>GET</code> or <code>HEAD</code>.</td></tr>
+            <tr><th scope="row"><code>429</code></th><td>Rate limited or temporarily busy. Honor <code>Retry-After</code> when present and back off before retrying.</td></tr>
+            <tr><th scope="row"><code>503</code></th><td>Statistics temporarily unavailable. Retry later.</td></tr>
+          </tbody></table></div>
+          <p>Errors use a JSON object with an <code>error</code> message:</p><pre><code>{"error":"Provide both from and to dates."}</code></pre>
+        </section>
+      </div>
+    </div>
+    <footer class="site-footer"><span><span class="footer-mark">V</span> VERGE <span class="footer-separator">/</span> Public mining API</span><a href="#top">Back to top ↑</a></footer>
+  </main>
+</body>
+</html>

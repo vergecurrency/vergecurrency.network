@@ -1,0 +1,14 @@
+# Replace the old Grafana proxy locations INSIDE the existing dashboard HTTPS
+# server block with this location. Keep listen/server_name/certificates and ACME.
+# Remove old Grafana-specific /api/, /api/live/, /login, /public/, etc. mappings
+# for this host so they cannot override this route. Keep the app outside web root.
+# Do not use the collector directory as root or alias.
+location / {
+    proxy_pass http://127.0.0.1:3001;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_read_timeout 25s;
+}
